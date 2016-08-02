@@ -19,7 +19,7 @@ var os = require('os');
 var rootUrl = 'https://medilogik.atlassian.net/browse/';
 
 var controller = Botkit.slackbot({
-    debug: false
+    debug: true
 });
 
 var bot = controller.spawn({
@@ -38,11 +38,27 @@ controller.hears('(EMS|AVA)', ['ambient', 'direct_message', 'direct_mention', 'm
         while (matches = ticketsRegex.exec(message.text)) {
             tickets.push(matches[0]);   
         }
+
         
         if (tickets.length > 0) {
+            var urls = [];
+            
             tickets.forEach(function(element) {
-                bot.reply(message, element + " - " + rootUrl + element);
+                var fullUrl = rootUrl + element;
+
+                if (message.text.toLowerCase().indexOf(fullUrl.toLowerCase()) != -1) {
+                    return;
+                }
+                
+                if (urls.indexOf(fullUrl) == -1) {
+                        urls.push(fullUrl);
+                }
+                
             }, this);
+
+            if (urls.length > 0) {
+                bot.reply(message, urls.join(' | '));
+            }
         }
     });
 });
